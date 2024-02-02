@@ -1,0 +1,173 @@
+import random
+
+story = """
+Valiant knight, you have decided to explore the mysterious dungeon of Evil Vamps! Known for its abundance of gold coins but also for its dreadful and terrible monsters. Your quest
+is to become the greatest hero of your homeland to have the privilege of protecting the royal family. You must achieve what no one before you has accomplished, to surpass level 20, by exploring the dark depths of Evil Vamps, and above all, to emerge alive.
+
+You enter this mythical dungeon, dark and ominous, your heart pounding as you take each step into the darkness...
+"""
+
+
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.max_health_points = 80
+        self.health_points = self.max_health_points
+        self.strength = 15
+        self.money = 20
+        self.level = 1
+        self.experience = 1
+        self.required_experience = 10
+        self.healing_potions = 3
+
+    def display_stats(self):
+        print(f"Name: {self.name}")
+        print(f"Level: {self.level}")
+        print(f"Experience: {self.experience}/{self.required_experience}")
+        print(f"Health Points: {self.health_points}/{self.max_health_points}")
+        print(f"Strength: {self.strength}")
+        print(f"Money: {self.money}")
+        print(f"Healing Potions: {self.healing_potions}")
+
+    def buy_potion(self):
+        print("You enter the shop.")
+        print("(1) Buy a healing potion (20 coins) that restores 20 to 40 health points.")
+        print("(2) Leave the shop")
+        choice = input("What do you want to buy? : ")
+
+        if choice == '1':
+            if self.money >= 20:
+                self.money -= 20
+                self.healing_potions += 1
+                print("You have bought a healing potion.")
+            else:
+                print("You do not have enough money to buy this potion.")
+        elif choice == '2':
+            print("You leave the shop.")
+        else:
+            print("Please choose a valid action.")
+
+    def attack(self, enemy):
+        damage = random.randint(self.strength // 2, self.strength)
+        enemy.health_points -= damage
+        print(f"You deal {damage} points of damage to the enemy.")
+
+    def is_alive(self):
+        return self.health_points > 0
+
+    def use_potion(self):
+        if self.healing_potions > 0:
+            healing = random.randint(20, 40)
+            self.health_points = min(self.health_points + healing, self.max_health_points)
+            self.healing_potions -= 1
+            print(f"You used a healing potion and recovered {healing} health points.")
+        else:
+            print("You are out of healing potions.")
+
+    def gain_experience(self, experience):
+        self.experience += experience
+        print(f"You gained {experience} experience points.")
+        if self.experience >= self.required_experience:
+            self.level += 1
+            self.experience -= self.required_experience
+            self.required_experience += 2
+            self.strength += 3
+            self.max_health_points += 5
+            self.health_points = self.max_health_points
+            print(f"You have reached level {self.level}! Your stats have been improved.")
+            if self.level == 20:
+                print("Congratulations (´• ω •`)! You have reached level 20. You have become the strongest knight in your kingdom, and your king crowns you and entrusts you with the protection of the royal family! ((created by Wael Belkhir))")
+                exit()
+
+
+class Enemy:
+    def __init__(self, name, health_points, strength, money_reward, experience_reward):
+        self.name = name
+        self.max_health_points = health_points
+        self.health_points = health_points
+        self.strength = strength
+        self.money_reward = money_reward
+        self.experience_reward = experience_reward
+
+    def attack(self, player):
+        damage = random.randint(self.strength // 2, self.strength)
+        player.health_points -= damage
+        print(f"The enemy deals {damage} points of damage to you.")
+
+    def is_alive(self):
+        return self.health_points > 0
+
+
+def battle(player, enemy):
+    print(f"A dangerous {enemy.name} appears!")
+    while player.is_alive() and enemy.is_alive():
+        choice = input("What do you want to do? (1) Attack, (2) Use a potion, (3) Flee: ")
+        if choice == '1':
+            player.attack(enemy)
+            if enemy.is_alive():
+                enemy.attack(player)
+        elif choice == '2':
+            player.use_potion()
+            enemy.attack(player)
+        elif choice == '3':
+            if random.randint(1, 2) == 1:
+                print("You successfully fled.")
+                return True
+            else:
+                print("Fleeing failed. The enemy attacks you.")
+                enemy.attack(player)
+        else:
+            print("Please choose a valid action.")
+
+    if player.is_alive():
+        gain_money = enemy.money_reward
+        gain_experience = enemy.experience_reward
+        player.money += gain_money
+        player.gain_experience(gain_experience)
+        print(f"You have defeated the enemy and gained {gain_money} coins.")
+        return True
+    else:
+        print("You have been defeated ! The game is over.")
+        return False
+
+
+def explore_dungeon(player):
+    print("You enter the dark and ominous dungeon...")
+    while player.is_alive():
+        choice = input("You find an empty room. What do you want to do? (1) Continue, (2) Use a potion, (3) Buy a potion, (4) Display stats, (5) Quit the dungeon: ")
+        if choice == '1':
+            if random.randint(1, 4) == 1:
+                enemy = random.choice([
+                    Enemy("Blood Bat", 10, 20, 5, 2),
+                    Enemy("Demonic Skeleton", 20, 25, 15, 4),
+                    Enemy("Flesh-eating Undead", 35, 45, 40, 5),
+                    Enemy("Dark Vampire", 50, 60, 50, 6)
+                ])
+                if not battle(player, enemy):
+                    break
+            else:
+                print("You continue to explore the dungeon.")
+        elif choice == '2':
+            player.use_potion()
+        elif choice == '3':
+            player.buy_potion()
+        elif choice == '4':
+            player.display_stats()
+        elif choice == '5':
+            print("You decide to leave the dungeon.")
+            break
+        else:
+            print("Invalid choice. Please choose a valid action.")
+
+    if player.is_alive():
+        print(f"You have completed your exploration of the dungeon, {player.name}. You reached level {player.level} and collected {player.money} coins. (´• ω •`) ")
+    else:
+        print(f"Your adventure is over, {player.name}. You reached level {player.level} and collected {player.money} coins. (´• ω •`), ((created by Wael Belkhir)) ")
+
+
+if __name__ == "__main__":
+    print(" The Evil Vamps ")
+    player_name = input("What is your name? : ")
+    print(story)
+    player = Player(player_name)
+    explore_dungeon(player)
